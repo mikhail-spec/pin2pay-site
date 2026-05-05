@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PIN2PAY — Modern payments infrastructure</title>
+<meta name="description" content="Accept, route and settle payments in 80+ countries with one API. PCI DSS Level 1, instant onboarding, 0.4% fee.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root, [data-theme="light"] {
+    --bg:    #FFFFFF;
+    --bg2:   #F7F7F8;
+    --bg3:   #EFEFF1;
+    --text1: #0A0A0A;
+    --text2: #666670;
+    --text3: #9A9AA3;
+    --accent:#0066FF;
+    --accent2:#635BFF;
+    --green: #00C853;
+    --orange:#FF7A00;
+    --line:  rgba(0,0,0,.07);
+    --line2: rgba(0,0,0,.04);
+    --blob1: rgba(0,102,255,.18);
+    --blob2: rgba(99,91,255,.14);
+    --blob3: rgba(255,122,0,.10);
+    --shadow: 0 1px 3px rgba(0,0,0,.04), 0 8px 32px rgba(0,0,0,.04);
+  }
+  [data-theme="dark"] {
+    --bg:    #000000;
+    --bg2:   #0D0D0D;
+    --bg3:   #161618;
+    --text1: #F5F5F7;
+    --text2: #86868B;
+    --text3: #5A5A60;
+    --accent:#2997FF;
+    --accent2:#7C7AFF;
+    --green: #30D158;
+    --orange:#FF9F0A;
+    --line:  rgba(255,255,255,.08);
+    --line2: rgba(255,255,255,.04);
+    --blob1: rgba(41,151,255,.20);
+    --blob2: rgba(124,122,255,.16);
+    --blob3: rgba(255,159,10,.12);
+    --shadow: 0 1px 3px rgba(0,0,0,.4), 0 8px 32px rgba(0,0,0,.5);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text1);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background 200ms, color 200ms;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; border: 0; background: none; color: inherit; }
+
+  /* ========== TOPBAR ========== */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar-inner {
+    max-width: 1200px; margin: 0 auto;
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 32px;
+  }
+  .logo {
+    font-weight: 800; font-size: 20px; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .logo-2 { font-weight: 300; opacity: 0.65; }
+  .nav { display: flex; gap: 28px; flex: 1; }
+  .nav a {
+    font-size: 14px; color: var(--text2); font-weight: 500;
+    transition: color 200ms;
+  }
+  .nav a:hover { color: var(--text1); }
+  .nav-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; font-size: 14px; font-weight: 600;
+    border-radius: 100px; transition: all 200ms;
+    white-space: nowrap;
+  }
+  .btn-ghost { color: var(--text1); }
+  .btn-ghost:hover { background: var(--bg2); }
+  .btn-primary { background: var(--text1); color: var(--bg); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px color-mix(in srgb, var(--text1) 24%, transparent); }
+  .theme-toggle {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text2); transition: all 200ms;
+  }
+  .theme-toggle:hover { background: var(--bg2); color: var(--text1); }
+
+  /* ========== HERO ========== */
+  .hero {
+    position: relative;
+    padding: 96px 24px 80px;
+    text-align: center;
+    overflow: hidden;
+  }
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { width: 520px; height: 520px; background: var(--blob1); top: -100px; left: -120px; }
+  .blob-2 { width: 480px; height: 480px; background: var(--blob2); top: 100px; right: -150px; }
+  .blob-3 { width: 380px; height: 380px; background: var(--blob3); bottom: -180px; left: 30%; }
+  .hero-inner { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    font-size: 13px; font-weight: 500; color: var(--text2);
+    margin-bottom: 28px;
+  }
+  .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--green); }
+    50% { opacity: .6; box-shadow: 0 0 0 4px transparent; }
+  }
+  h1 {
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    margin-bottom: 20px;
+  }
+  h1 .grad {
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 60%, var(--orange) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: clamp(17px, 2vw, 20px);
+    color: var(--text2);
+    max-width: 620px; margin: 0 auto 36px;
+    line-height: 1.5;
+  }
+  .hero-cta { display: inline-flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .btn-lg { padding: 13px 26px; font-size: 15px; }
+  .btn-secondary {
+    background: var(--bg2); color: var(--text1);
+    border: 1px solid var(--line);
+  }
+  .btn-secondary:hover { background: var(--bg3); }
+
+  .hero-metrics {
+    display: inline-flex; align-items: stretch; gap: 0;
+    margin-top: 56px;
+    padding: 8px 20px;
+    background: color-mix(in srgb, var(--bg) 60%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    box-shadow: var(--shadow);
+  }
+  .metric {
+    padding: 12px 24px;
+    border-right: 1px solid var(--line);
+  }
+  .metric:last-child { border-right: 0; }
+  .metric-num {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .metric-label { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+  /* ========== SECTIONS ========== */
+  section { padding: 96px 24px; position: relative; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  .section-head { text-align: center; margin-bottom: 64px; }
+  .eyebrow {
+    display: inline-block;
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: clamp(32px, 4.5vw, 52px);
+    line-height: 1.1; font-weight: 700;
+    letter-spacing: -0.025em;
+    max-width: 720px; margin: 0 auto 16px;
+  }
+  .section-sub {
+    font-size: 18px; color: var(--text2);
+    max-width: 580px; margin: 0 auto;
+  }
+
+  /* ========== LOGO CLOUD ========== */
+  .logo-cloud {
+    padding: 48px 24px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .logo-cloud-label {
+    text-align: center; font-size: 13px; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 28px;
+  }
+  .logo-row {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 48px; align-items: center;
+    opacity: 0.55;
+  }
+  .logo-item {
+    font-size: 17px; font-weight: 700; color: var(--text2);
+    letter-spacing: -0.01em;
+  }
+
+  /* ========== HOW IT WORKS ========== */
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    counter-reset: step;
+  }
+  .step {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 36px 32px;
+    transition: transform 300ms, box-shadow 300ms;
+  }
+  .step:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+  .step-num {
+    counter-increment: step;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--text1); color: var(--bg);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+    margin-bottom: 20px;
+  }
+  .step-num::before { content: counter(step); }
+  .step h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .step p { font-size: 15px; color: var(--text2); line-height: 1.55; }
+
+  /* ========== FEATURES GRID (Stripe-style) ========== */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    overflow: hidden;
+  }
+  .feature {
+    background: var(--bg);
+    padding: 36px 28px;
+    transition: background 200ms;
+  }
+  .feature:hover { background: var(--bg2); }
+  .feature-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 18px;
+    margin-bottom: 18px;
+  }
+  .feature h4 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .feature p { font-size: 14px; color: var(--text2); line-height: 1.5; }
+
+  /* ========== FEATURE ROW (visual card) ========== */
+  .feature-row {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+    margin-bottom: 96px;
+  }
+  .feature-row:last-child { margin-bottom: 0; }
+  .feature-row.reverse { direction: rtl; }
+  .feature-row.reverse > * { direction: ltr; }
+  .feature-text h3 { font-size: clamp(28px, 3.5vw, 40px); line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 16px; }
+  .feature-text p { font-size: 17px; color: var(--text2); margin-bottom: 24px; }
+  .feature-text ul { list-style: none; }
+  .feature-text li { padding: 10px 0; border-bottom: 1px solid var(--line); display: flex; align-items: flex-start; gap: 12px; font-size: 15px; }
+  .feature-text li:last-child { border-bottom: 0; }
+  .feature-text li::before { content: ''; flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); margin-top: 2px; position: relative; }
+  .visual-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .vc-dots {
+    display: flex; gap: 8px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .vc-dots span {
+    width: 12px; height: 12px; border-radius: 50%;
+  }
+  .vc-body { padding: 24px 28px; }
+  .tx-row {
+    display: grid; grid-template-columns: 36px 1fr auto auto;
+    gap: 14px; align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line2);
+    font-size: 14px;
+  }
+  .tx-row:last-child { border-bottom: 0; }
+  .tx-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--bg2), var(--bg3));
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--text2); font-weight: 700; font-size: 13px;
+  }
+  .tx-merchant { font-weight: 500; }
+  .tx-meta { font-size: 12px; color: var(--text3); }
+  .tx-amount { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tx-status { font-size: 11px; padding: 3px 8px; border-radius: 100px; font-weight: 600; }
+  .tx-ok { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }
+  .tx-pend { background: color-mix(in srgb, var(--orange) 15%, transparent); color: var(--orange); }
+
+  /* ========== COMPLIANCE STRIP ========== */
+  .compliance {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 48px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 48px;
+    align-items: center;
+  }
+  .compliance h3 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
+  .compliance p { color: var(--text2); font-size: 15px; max-width: 460px; }
+  .badges {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .badge {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 130px;
+  }
+  .badge-name { font-weight: 700; font-size: 14px; letter-spacing: -0.01em; }
+  .badge-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+  /* ========== TESTIMONIALS ========== */
+  .testimonials {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .testimonial {
+    background: var(--bg2);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .testimonial:first-child { grid-row: span 2; background: linear-gradient(180deg, var(--bg2), var(--bg3)); }
+  .testimonial blockquote { font-size: 17px; line-height: 1.5; font-weight: 500; flex: 1; }
+  .testimonial:first-child blockquote { font-size: 22px; font-weight: 600; }
+  .testimonial-meta { display: flex; align-items: center; gap: 12px; }
+  .ta-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; font-weight: 700; font-size: 15px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .ta-info { line-height: 1.3; }
+  .ta-name { font-weight: 600; font-size: 14px; }
+  .ta-role { font-size: 12px; color: var(--text2); }
+
+  /* ========== PRICING ========== */
+  .pricing {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .price-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 36px 32px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .price-card.featured {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--bg)), var(--bg));
+    position: relative;
+  }
+  .featured-tag {
+    position: absolute; top: -10px; right: 24px;
+    background: var(--accent); color: #fff;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 100px;
+  }
+  .price-name { font-size: 14px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; }
+  .price-amount { font-size: 44px; font-weight: 700; letter-spacing: -0.025em; line-height: 1; }
+  .price-amount sub { font-size: 16px; font-weight: 500; color: var(--text2); margin-left: 4px; }
+  .price-desc { color: var(--text2); font-size: 14px; }
+  .price-features { list-style: none; padding: 16px 0; border-top: 1px solid var(--line); }
+  .price-features li { padding: 8px 0; font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
+  .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+
+  /* ========== FAQ ========== */
+  .faq { max-width: 760px; margin: 0 auto; }
+  details {
+    border-bottom: 1px solid var(--line);
+    padding: 20px 0;
+  }
+  summary {
+    font-weight: 600; font-size: 17px;
+    cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '+'; font-size: 24px; font-weight: 300;
+    color: var(--text2); transition: transform 200ms;
+  }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { color: var(--text2); margin-top: 12px; line-height: 1.6; font-size: 15px; }
+
+  /* ========== FOOTER CTA ========== */
+  .cta-final {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 32px;
+    padding: 80px 48px;
+    text-align: center;
+    color: #fff;
+    margin: 96px 24px;
+    max-width: 1200px;
+    margin-left: auto; margin-right: auto;
+  }
+  .cta-final h2 { color: #fff; font-size: clamp(32px, 4.5vw, 48px); margin-bottom: 16px; }
+  .cta-final p { color: rgba(255,255,255,.85); font-size: 18px; margin-bottom: 32px; max-width: 520px; margin-left: auto; margin-right: auto; }
+  .cta-final .btn-primary { background: #fff; color: var(--accent); }
+  .cta-final .btn-primary:hover { background: rgba(255,255,255,.95); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 56px 24px 32px;
+    color: var(--text2);
+    font-size: 13px;
+  }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
+  .footer-col h5 { color: var(--text1); font-size: 13px; font-weight: 600; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .footer-col a { display: block; padding: 5px 0; color: var(--text2); transition: color 200ms; }
+  .footer-col a:hover { color: var(--text1); }
+  .footer-bottom { max-width: 1200px; margin: 48px auto 0; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+
+  /* ========== SCROLL REVEAL ========== */
+  .sr {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 700ms, transform 700ms;
+  }
+  .sr.visible { opacity: 1; transform: none; }
+
+  /* ========== MOBILE ========== */
+  @media (max-width: 900px) {
+    .nav { display: none; }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature-row { grid-template-columns: 1fr; gap: 32px; }
+    .feature-row.reverse { direction: ltr; }
+    .compliance { grid-template-columns: 1fr; padding: 32px; }
+    .testimonials { grid-template-columns: 1fr; }
+    .testimonial:first-child { grid-row: auto; }
+    .pricing { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 480px) {
+    section { padding: 64px 16px; }
+    .hero { padding: 64px 16px 56px; }
+    .hero-metrics { flex-wrap: wrap; padding: 8px; }
+    .metric { padding: 8px 16px; border-right: 0; border-bottom: 1px solid var(--line); }
+    .metric:last-child { border-bottom: 0; }
+    .features-grid { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+    .cta-final { padding: 56px 24px; margin: 64px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#" class="logo">PIN<span class="logo-2">2</span>PAY</a>
+    <nav class="nav">
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <a href="#" class="btn btn-ghost">Sign in</a>
+      <a href="#cta" class="btn btn-primary">Get started</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="hero-inner">
+    <span class="pill"><span class="pill-dot"></span>Live in 80+ countries · v2.4 just shipped</span>
+    <h1>Payments that <span class="grad">just work.</span><br>From PIN to anywhere.</h1>
+    <p class="hero-sub">One API for cards, wallets, bank transfers and crypto. Onboard in 24 hours, settle in 1 day, scale to a billion without rewriting a single line.</p>
+    <div class="hero-cta">
+      <a href="#cta" class="btn btn-primary btn-lg">Start free →</a>
+      <a href="#how" class="btn btn-secondary btn-lg">See how it works</a>
+    </div>
+    <div class="hero-metrics">
+      <div class="metric"><div class="metric-num">$4.2B+</div><div class="metric-label">processed in 2026</div></div>
+      <div class="metric"><div class="metric-num">99.998%</div><div class="metric-label">uptime SLA</div></div>
+      <div class="metric"><div class="metric-num">0.4%</div><div class="metric-label">starting fee</div></div>
+      <div class="metric"><div class="metric-num">12,400+</div><div class="metric-label">merchants</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGO CLOUD -->
+<div class="logo-cloud">
+  <div class="logo-cloud-label">Trusted by teams shipping payments at scale</div>
+  <div class="logo-row">
+    <div class="logo-item">◆ NORTHWAVE</div>
+    <div class="logo-item">⬡ Pintora</div>
+    <div class="logo-item">◇ Stalwart</div>
+    <div class="logo-item">▲ Asynx</div>
+    <div class="logo-item">○ BCB Group</div>
+    <div class="logo-item">▣ Riedella</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container">
+    <div class="section-head sr">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps to live payments</h2>
+      <p class="section-sub">No sales calls. No 90-page integration guides. Most teams ship their first transaction the same afternoon.</p>
+    </div>
+    <div class="steps">
+      <div class="step sr">
+        <div class="step-num"></div>
+        <h3>Sign up</h3>
+        <p>Create your account in under 2 minutes. KYB verification runs in parallel — you can start in test mode immediately.</p>
+      </div>
+      <div class="step sr">
+        <div class="step-num"></div>
+        <h3>Drop in the SDK</h3>
+        <p>Six lines of code. Works in any stack — Node, Python, Go, PHP, .NET. Built-in components for React, Vue, Swift, Kotlin.</p>
+      </div>
+      <div class="step sr">
+        <div class="step-num"></div>
+        <h3>Go live</h3>
+        <p>Flip one switch. Payments route through 30+ acquirers, fail over automatically, settle to your bank account next business day.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES GRID -->
+<section id="features" style="background: var(--bg2);">
+  <div class="container">
+    <div class="section-head sr">
+      <div class="eyebrow">Built for builders</div>
+      <h2>Everything in the box</h2>
+      <p class="section-sub">No add-ons, no hidden modules. The features below are included on every plan, including the free one.</p>
+    </div>
+    <div class="features-grid sr">
+      <div class="feature"><div class="feature-icon">⚡</div><h4>Smart routing</h4><p>Pick the cheapest, highest-converting acquirer for each transaction in real time.</p></div>
+      <div class="feature"><div class="feature-icon">🛡</div><h4>Fraud engine</h4><p>ML-powered, tunable to your appetite. Catches 94% of attacks at sub-3ms latency.</p></div>
+      <div class="feature"><div class="feature-icon">🌐</div><h4>80+ countries</h4><p>Local acquiring everywhere it matters. Higher approval rates, lower FX cost.</p></div>
+      <div class="feature"><div class="feature-icon">💳</div><h4>Apple &amp; Google Pay</h4><p>One-tap checkout for 1.4 billion devices, no PCI scope required on your side.</p></div>
+      <div class="feature"><div class="feature-icon">↻</div><h4>Subscriptions</h4><p>Trials, proration, dunning, retries — built in. Stops 38% of involuntary churn out of the box.</p></div>
+      <div class="feature"><div class="feature-icon">📊</div><h4>Real-time analytics</h4><p>Cohort retention, funnel drop-offs, decline reasons — all queryable, exportable to your warehouse.</p></div>
+      <div class="feature"><div class="feature-icon">🔗</div><h4>Webhooks &amp; events</h4><p>Idempotent, retryable, signed. Replay any event for the last 90 days from the dashboard.</p></div>
+      <div class="feature"><div class="feature-icon">🧩</div><h4>Open source SDKs</h4><p>MIT-licensed, on GitHub. Fork them, audit them, ship patches — we'll merge.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE ROW -->
+<section>
+  <div class="container">
+    <div class="feature-row sr">
+      <div class="feature-text">
+        <div class="eyebrow">One ledger, every method</div>
+        <h3>Cards, wallets, banks &mdash; one reconciliation.</h3>
+        <p>Stop stitching together 6 dashboards on Monday morning. PIN2PAY normalizes every payment method into one event stream, one ledger, one CSV.</p>
+        <ul>
+          <li>40+ payment methods on tap</li>
+          <li>Multi-currency settlement, no FX surprises</li>
+          <li>One webhook schema for everything</li>
+          <li>Audit-ready exports for finance &amp; tax</li>
+        </ul>
+      </div>
+      <div class="visual-card">
+        <div class="vc-dots"><span style="background:#FF5F57"></span><span style="background:#FFBD2E"></span><span style="background:#28C840"></span></div>
+        <div class="vc-body">
+          <div class="tx-row">
+            <div class="tx-avatar">SP</div>
+            <div><div class="tx-merchant">Stripe Inc.</div><div class="tx-meta">card · USD · 2 min ago</div></div>
+            <div class="tx-amount">$1,420.00</div>
+            <div class="tx-status tx-ok">Settled</div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-avatar">AP</div>
+            <div><div class="tx-merchant">Apple Pay</div><div class="tx-meta">wallet · EUR · 5 min ago</div></div>
+            <div class="tx-amount">€89.50</div>
+            <div class="tx-status tx-ok">Settled</div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-avatar">SE</div>
+            <div><div class="tx-merchant">SEPA Instant</div><div class="tx-meta">bank · EUR · 8 min ago</div></div>
+            <div class="tx-amount">€2,100.00</div>
+            <div class="tx-status tx-pend">Routing</div>
+          </div>
+          <div class="tx-row">
+            <div class="tx-avatar">USDC</div>
+            <div><div class="tx-merchant">USDC on-chain</div><div class="tx-meta">crypto · USD · 12 min ago</div></div>
+            <div class="tx-amount">$540.00</div>
+            <div class="tx-status tx-ok">Settled</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPLIANCE -->
+<section style="background: var(--bg2);">
+  <div class="container">
+    <div class="compliance sr">
+      <div>
+        <div class="eyebrow">Compliance &amp; security</div>
+        <h3>Audited where it matters.</h3>
+        <p>PCI DSS Level 1, SOC 2 Type II, ISO 27001, GDPR — annually reviewed by independent auditors. Reports available under NDA.</p>
+      </div>
+      <div class="badges">
+        <div class="badge"><div class="badge-name">PCI DSS L1</div><div class="badge-desc">Card data</div></div>
+        <div class="badge"><div class="badge-name">SOC 2 Type II</div><div class="badge-desc">Operations</div></div>
+        <div class="badge"><div class="badge-name">ISO 27001</div><div class="badge-desc">Information security</div></div>
+        <div class="badge"><div class="badge-name">GDPR</div><div class="badge-desc">EU data</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="container">
+    <div class="section-head sr">
+      <div class="eyebrow">Customers</div>
+      <h2>What teams say</h2>
+    </div>
+    <div class="testimonials sr">
+      <div class="testimonial">
+        <blockquote>“We replaced four separate processors with PIN2PAY in three weeks. Our approval rate went up 6 points and our finance team stopped working weekends.”</blockquote>
+        <div class="testimonial-meta">
+          <div class="ta-avatar">EM</div>
+          <div class="ta-info"><div class="ta-name">Elena Markova</div><div class="ta-role">CFO, Northwave</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <blockquote>“The smart routing alone paid for itself in the first month.”</blockquote>
+        <div class="testimonial-meta"><div class="ta-avatar">DR</div><div class="ta-info"><div class="ta-name">David Roth</div><div class="ta-role">CTO, Asynx</div></div></div>
+      </div>
+      <div class="testimonial">
+        <blockquote>“Onboarding in 19 hours. After two years on a legacy stack — that felt illegal.”</blockquote>
+        <div class="testimonial-meta"><div class="ta-avatar">YK</div><div class="ta-info"><div class="ta-name">Yuki Konno</div><div class="ta-role">Head of Eng, Riedella</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background: var(--bg2);">
+  <div class="container">
+    <div class="section-head sr">
+      <div class="eyebrow">Pricing</div>
+      <h2>Pay only when you get paid</h2>
+      <p class="section-sub">No setup fees. No monthly minimums. No annual contracts.</p>
+    </div>
+    <div class="pricing sr">
+      <div class="price-card">
+        <div class="price-name">Starter</div>
+        <div class="price-amount">$0<sub>/month</sub></div>
+        <div class="price-desc">For early-stage teams shipping their first integration.</div>
+        <ul class="price-features">
+          <li>0.9% + 30¢ per transaction</li>
+          <li>All payment methods</li>
+          <li>Test mode forever</li>
+          <li>Community support</li>
+          <li>Up to $50K monthly volume</li>
+        </ul>
+        <a href="#cta" class="btn btn-secondary">Start free</a>
+      </div>
+      <div class="price-card featured">
+        <div class="featured-tag">Popular</div>
+        <div class="price-name">Growth</div>
+        <div class="price-amount">$0<sub>/month</sub></div>
+        <div class="price-desc">For teams scaling past $1M in monthly volume.</div>
+        <ul class="price-features">
+          <li>0.4% per transaction</li>
+          <li>Custom routing rules</li>
+          <li>Advanced analytics</li>
+          <li>Priority support, 1h response</li>
+          <li>Dedicated solutions architect</li>
+          <li>Volume discounts past $5M</li>
+        </ul>
+        <a href="#cta" class="btn btn-primary">Talk to sales</a>
+      </div>
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount">Custom</div>
+        <div class="price-desc">For platforms, marketplaces and global merchants.</div>
+        <ul class="price-features">
+          <li>Negotiated interchange++</li>
+          <li>Dedicated infrastructure</li>
+          <li>SLA + uptime credits</li>
+          <li>24/7 named support</li>
+          <li>Custom contracts &amp; DPA</li>
+          <li>White-label options</li>
+        </ul>
+        <a href="#cta" class="btn btn-secondary">Contact us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="section-head sr">
+      <div class="eyebrow">FAQ</div>
+      <h2>Questions, answered</h2>
+    </div>
+    <div class="faq sr">
+      <details>
+        <summary>How long does it take to go live?</summary>
+        <p>Median time from sign-up to first live transaction is 11 hours. KYB verification runs in parallel with integration, so most teams ship in test mode within 30 minutes and switch to production the next morning.</p>
+      </details>
+      <details>
+        <summary>What payment methods do you support?</summary>
+        <p>Cards (Visa, Mastercard, Amex, Discover, JCB, UnionPay), wallets (Apple Pay, Google Pay, PayPal, Alipay, WeChat Pay), bank transfers (SEPA, ACH, Faster Payments, PIX), buy-now-pay-later (Klarna, Afterpay, Affirm), and stablecoin rails (USDC on Ethereum, Solana, Base).</p>
+      </details>
+      <details>
+        <summary>Is there a contract or minimum volume?</summary>
+        <p>No on both. The Starter plan stays free for as long as you stay under $50K monthly. Growth has no minimum — you pay 0.4% per transaction, that's it.</p>
+      </details>
+      <details>
+        <summary>How does fraud protection work?</summary>
+        <p>Every transaction passes through a real-time ML model trained on $40B of historical traffic. You set the risk appetite (low / medium / high) and PIN2PAY auto-tunes thresholds. False positives are reimbursed within 7 days.</p>
+      </details>
+      <details>
+        <summary>Can we self-host?</summary>
+        <p>Not the core processing rails — those need to live in our PCI-scope environment. But everything else (dashboard, reporting, webhooks consumer) is open source under MIT, fork it freely.</p>
+      </details>
+      <details>
+        <summary>What happens if PIN2PAY goes down?</summary>
+        <p>Multi-region active-active. Last unscheduled outage was 47 seconds in November 2025. Status page at status.pin2pay.com, with public RCA on every incident.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div id="cta" class="cta-final sr">
+  <h2>Ready to ship?</h2>
+  <p>Sign up, drop in six lines of code, take your first payment before lunch.</p>
+  <a href="#" class="btn btn-primary btn-lg">Get started — free →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-col">
+      <a href="#" class="logo" style="font-size: 22px; margin-bottom: 12px; display: inline-block;">PIN<span class="logo-2">2</span>PAY</a>
+      <p style="max-width: 280px; line-height: 1.6;">Modern payments infrastructure for businesses that ship fast.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Product</h5>
+      <a href="#how">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#">Changelog</a>
+    </div>
+    <div class="footer-col">
+      <h5>Resources</h5>
+      <a href="#">Documentation</a>
+      <a href="#">API reference</a>
+      <a href="#">Status</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <a href="#">About</a>
+      <a href="#">Customers</a>
+      <a href="#">Careers</a>
+      <a href="#">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© 2026 PIN2PAY. All rights reserved.</div>
+    <div style="display: flex; gap: 24px;">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+      <a href="#">Compliance</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle
+  const root = document.documentElement;
+  const stored = localStorage.getItem('p2p-theme');
+  if (stored) root.setAttribute('data-theme', stored);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('p2p-theme', next);
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.sr').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
