@@ -1,3 +1,6 @@
 *.log
 .DS_Store
 node_modules/
+original.html
+scratch/
+*.scrape.html
